@@ -1,17 +1,16 @@
-import App, { Container } from 'next/app';
-import Page from '../components/Page';
-import { ApolloProvider } from 'react-apollo';
-import withData from '../lib/withData';
+import App, { Container } from "next/app";
+import Page from "../components/Page";
+import { ApolloProvider } from "react-apollo";
+import withData from "../lib/withData";
 
 class MyApp extends App {
-  // Next.js lifecycle method -- this makes every page to execute any GraphQL query contained in it (e.g. fetch list of items)
+  // exposes the query string to the component via props
   static async getInitialProps({ Component, ctx }) {
-    let pageProps = {}
-    if(Component.getInitialProps) {
+    let pageProps = {};
+    if (Component.getInitialProps) {
       pageProps = await Component.getInitialProps(ctx);
     }
 
-    // this exposes the query to the user
     pageProps.query = ctx.query;
     return { pageProps };
   }
