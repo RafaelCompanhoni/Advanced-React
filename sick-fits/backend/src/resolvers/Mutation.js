@@ -95,6 +95,10 @@ const Mutations = {
     });
 
     return user;
+  },
+  async signout(parent, { email, password }, ctx, info) {
+    ctx.response.clearCookie('token');
+    return { message: 'Logged out' }
   }
 };
 
