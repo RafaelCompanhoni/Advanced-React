@@ -2,6 +2,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { randomBytes } = require("crypto");
 const { promisify } = require("util");
+const { transport, makeANiceEmail } = require('../mail');
 
 const Mutations = {
   async createItem(parent, args, ctx, info) {
@@ -121,10 +122,16 @@ const Mutations = {
       where: { email: args.email },
       data: { resetToken, resetTokenExpiry }
     });
+    
+    // email the user the reset token
+    const mailResponse = await transport.sendMail({
+      from: 'companhoni@gmail.com',
+      to: user.email,
+      subject: 'Your password reset token',
+      html: makeANiceEmail(`Your password reset token is here \n\n <a href="${process.env.FRONTEND_URL}/reset?resetToken=${resetToken}">Click here to reset</a>`),
+    })
 
     return { message: "reset token successfully generated" };
-
-    // TODO - email the user the reset token
   },
   async resetPassword(parent, args, ctx, info) {
     // check if the passwords match
@@ -133,6 +140,7 @@ const Mutations = {
     }
 
     // check if it's a legit reset token and it's not expired
+    console.log(`CHECKING THE TOKEN ${args.resetToken}`);
     const [user] = await ctx.db.query.users({
       where: {
         resetToken: args.resetToken,
@@ -157,8 +165,6 @@ const Mutations = {
       },
       info
     );
-
-    console.log("UPDATED USER: ", updatedUser);
 
     // generate the JWT token and set the cookie with it
     const token = jwt.sign({ userId: updatedUser.id }, process.env.APP_SECRET);
