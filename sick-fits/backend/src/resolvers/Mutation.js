@@ -11,6 +11,7 @@ const Mutations = {
       throw new Error('You must be logged in to create an item');
     }
 
+    // creates a new item with a relationship with the current user
     const item = await ctx.db.mutation.createItem(
       {
         data: {
